@@ -28,15 +28,15 @@ use warnings;
 my @G_mouseParams = (
  {
     "title"  => "High Sensitivity",
-    "decel"  => "3.5",              # higher decel numbers equals slower pointer
+    "decel"  => "3.0",              # higher decel numbers equals slower pointer
     "accel"  => "4",
-    "thresh" => "2",
+    "thresh" => "1",
  },
  {
     "title"  => "Medium Sensitivity",
-    "decel"  => "3.0",
-    "accel"  => "4",
-    "thresh" => "1",
+    "decel"  => "2.8",
+    "accel"  => "2.7",
+    "thresh" => "1.4",
  },
  {
     "title"  => "Acceleration Off",
@@ -192,4 +192,3 @@ sub main {
 }
 
 main();
-
