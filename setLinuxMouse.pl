@@ -69,10 +69,13 @@ sub setMouseProps {
 	my $paramAccel  = $G_mouseParams[$optIndex]{accel};
 	my $paramThresh = $G_mouseParams[$optIndex]{thresh};
 
+	my $cmd1 = "xinput --set-prop $mouseNumericID 'Device Accel Constant Deceleration' $paramDecel &";
+	my $cmd2 = "xset mouse $paramAccel $paramThresh &";
+
 	print "Running xinput+xset settings for mouse: ID='$mouseNumericID' " .
 	      "with parameters: $paramDecel, $paramAccel, $paramThresh\n";
-	`xinput --set-prop $mouseNumericID 'Device Accel Constant Deceleration' $paramDecel &`;
-	`xset mouse $paramAccel $paramThresh &`;
+	print "$cmd1\n"; `$cmd1`;
+	print "$cmd2\n"; `$cmd2`;
 }
 
 sub getMouseParamsIndex {
