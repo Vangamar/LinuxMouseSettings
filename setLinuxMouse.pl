@@ -27,10 +27,10 @@ use warnings;
 # Edit these for what works for your mice
 my @G_mouseParams = (
  {
-    "title"  => "Best Sensitivity for about 700 to 800 DPI (many Bothans died for these numbers)",
-    "decel"  => "2.4",              # higher decel numbers equals slower pointer
-    "accel"  => "4.4",
-    "thresh" => "1.0",
+    "title"  => "Best Sensitivity for about 700 to 800 DPI",
+    "decel"  => "2.0",              # higher decel numbers equals slower pointer
+    "accel"  => "4.8",
+    "thresh" => "2.0",
  },
  {
     "title"  => "Testing Sensitivity",
