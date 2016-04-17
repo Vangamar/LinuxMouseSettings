@@ -63,19 +63,33 @@ sub setMouseProps {
 		print "ERROR: bad mouse numeric ID: '$mouseNumericID'...\n";
 		return;
 	}
-	
+
 	# set to desktop acceleration pointer values for this mouse
 	my $paramDecel  = $G_mouseParams[$optIndex]{decel};
 	my $paramAccel  = $G_mouseParams[$optIndex]{accel};
 	my $paramThresh = $G_mouseParams[$optIndex]{thresh};
 
-	my $cmd1 = "xinput --set-prop $mouseNumericID 'Device Accel Constant Deceleration' $paramDecel &";
-	my $cmd2 = "xset mouse $paramAccel $paramThresh &";
+	my $xinputCmd = "xinput --set-prop $mouseNumericID 'Device Accel Constant Deceleration' $paramDecel";
+	my $xsetCmd = "xset mouse $paramAccel $paramThresh";
 
 	print "Running xinput+xset settings for mouse: ID='$mouseNumericID' " .
 	      "with parameters: $paramDecel, $paramAccel, $paramThresh\n";
-	print "$cmd1\n"; `$cmd1`;
-	print "$cmd2\n"; `$cmd2`;
+
+	my $mouseAccelOFF = "xinput --set-prop $mouseNumericID 'Device Accel Profile' -1";
+	my $mouseAccelON  = "xinput --set-prop $mouseNumericID 'Device Accel Profile' 0";
+	if ($paramAccel == 1 && $paramThresh == 1) {
+		# Detected turning mouse accel off
+		print "DISABLING ALL MOUSE ACCELERATION...\n";
+		print "$mouseAccelOFF\n"; `$mouseAccelOFF`;
+	}
+	else {
+		# Detected turning mouse accel on
+		print "Mouse Acceleration Enabled...\n";
+		print "$mouseAccelON\n"; `$mouseAccelON`;
+		print "$xinputCmd\n"; `$xinputCmd`;
+	}
+
+	print "$xsetCmd\n"; `$xsetCmd`;
 }
 
 sub getMouseParamsIndex {
