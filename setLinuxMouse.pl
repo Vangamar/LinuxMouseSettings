@@ -41,8 +41,8 @@ my @G_mouseParams = (
  {
     "title"  => "Acceleration Off",
     "decel"  => "1.0",
-    "accel"  => "1",
-    "thresh" => "1",
+    "accel"  => "0",
+    "thresh" => "0",
  },
 );
 
