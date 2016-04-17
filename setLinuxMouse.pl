@@ -86,9 +86,9 @@ sub setMouseProps {
 		# Detected turning mouse accel on
 		print "Mouse Acceleration Enabled...\n";
 		print "$mouseAccelON\n"; `$mouseAccelON`;
-		print "$xinputCmd\n"; `$xinputCmd`;
 	}
 
+	print "$xinputCmd\n"; `$xinputCmd`;
 	print "$xsetCmd\n"; `$xsetCmd`;
 }
 
