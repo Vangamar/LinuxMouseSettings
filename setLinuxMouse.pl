@@ -25,7 +25,7 @@ use warnings;
 #
 
 # Edit these for what works for your mice
-my @G_mouseParams = (
+my @g_mouseParams = (
  {
     "title"  => "Best Sensitivity for about 700 to 800 DPI",
     "decel"  => "2.0",              # higher decel numbers equals slower pointer
@@ -46,15 +46,17 @@ my @G_mouseParams = (
  },
 );
 
-#print "$G_mouseParams[0]{title}\n";
+#print "$g_mouseParams[0]{title}\n";
 
-my $G_boldText     = `tput bold`;
-my $G_normalText   = `tput sgr0`;
-my $G_cursorLeft1  = `tput cub1`;
-my $G_cursorRight1 = `tput cuf1`;
-my $G_cursorUp1    = `tput cuu1`;
-my $G_cursorDown1  = `tput cud1`;
+my $g_boldText     = `tput bold`;
+my $g_normalText   = `tput sgr0`;
+my $g_cursorLeft1  = `tput cub1`;
+my $g_cursorRight1 = `tput cuf1`;
+my $g_cursorUp1    = `tput cuu1`;
+my $g_cursorDown1  = `tput cud1`;
 
+
+my ($g_CMDARG_mouseStrIdent, $g_CMDARG_paramsIndex) = @ARGV;
 
 sub setMouseProps {
 	my ($optIndex, $mouseNumericID) = @_;
@@ -65,9 +67,9 @@ sub setMouseProps {
 	}
 
 	# set to desktop acceleration pointer values for this mouse
-	my $paramDecel  = $G_mouseParams[$optIndex]{decel};
-	my $paramAccel  = $G_mouseParams[$optIndex]{accel};
-	my $paramThresh = $G_mouseParams[$optIndex]{thresh};
+	my $paramDecel  = $g_mouseParams[$optIndex]{decel};
+	my $paramAccel  = $g_mouseParams[$optIndex]{accel};
+	my $paramThresh = $g_mouseParams[$optIndex]{thresh};
 
 	my $xinputCmd = "xinput --set-prop $mouseNumericID 'Device Accel Constant Deceleration' $paramDecel";
 	my $xsetCmd = "xset mouse $paramAccel $paramThresh";
@@ -77,7 +79,7 @@ sub setMouseProps {
 
 	my $mouseAccelOFF = "xinput --set-prop $mouseNumericID 'Device Accel Profile' -1";
 	my $mouseAccelON  = "xinput --set-prop $mouseNumericID 'Device Accel Profile' 0";
-	if ($paramAccel == 1 && $paramThresh == 1) {
+	if ($paramAccel == 0 && $paramThresh == 0) {
 		# Detected turning mouse accel off
 		print "DISABLING ALL MOUSE ACCELERATION...\n";
 		print "$mouseAccelOFF\n"; `$mouseAccelOFF`;
@@ -93,15 +95,15 @@ sub setMouseProps {
 }
 
 sub getMouseParamsIndex {
-	my $indexMax = $#G_mouseParams;
+	my $indexMax = $#g_mouseParams;
 	my $optIndex = -1; #index error state
 	my @menuStrings;
 
 	# build menu options string array
 	for(my $i = 0; $i <= $indexMax; $i++) {
 		# print $i+1 for fake 1 origin array (for user appearances in menu selection)
-		$menuStrings[$i] = "  ---> " . ($i+1) . ": $G_mouseParams[$i]{title} " .
-		      "($G_mouseParams[$i]{decel}, $G_mouseParams[$i]{accel}, $G_mouseParams[$i]{thresh})"; 
+		$menuStrings[$i] = "  ---> " . ($i+1) . ": $g_mouseParams[$i]{title} " .
+		      "($g_mouseParams[$i]{decel}, $g_mouseParams[$i]{accel}, $g_mouseParams[$i]{thresh})"; 
 	}
 	
 	# get desired mouse params index from user
@@ -111,8 +113,18 @@ sub getMouseParamsIndex {
 			print "$m\n"; 
 		}
 		print "  ---> ";
-		$optIndex = <STDIN>; chomp($optIndex);
-		if ($optIndex =~ /^[0-9]+$/) {
+
+		if ($g_CMDARG_paramsIndex) {
+			# Command line argument was given, so use it
+			$optIndex = $g_CMDARG_paramsIndex;
+			print "$optIndex\n";
+		}
+		else {
+			$optIndex = <STDIN>; chomp($optIndex);
+		}
+
+
+		if ($optIndex =~ /^[1-9][0-9]*$/) {
 			$optIndex--; # -1 for 0 origin array internally
 		}
 		else {
@@ -120,8 +132,8 @@ sub getMouseParamsIndex {
 		}
 	} while ($optIndex < 0 || $optIndex > $indexMax);
 
-	print "$G_cursorUp1";
-	print "\r$G_boldText "."$menuStrings[$optIndex]"."$G_normalText\n";
+	print "$g_cursorUp1";
+	print "\r$g_boldText "."$menuStrings[$optIndex]"."$g_normalText\n";
 	return $optIndex;
 }
 
@@ -139,8 +151,11 @@ sub getUserSelectedKey {
 			print "  ---> " . ($i+1) . ": '$keyArray[$i]'\n"; 
 		}
 		print "  ---> ";
+
+		# Get user menu selection for Mouse String Identifier		
 		$optIndex = <STDIN>; chomp($optIndex);
-		if ($optIndex =~ /^[0-9]+$/) {
+
+		if ($optIndex =~ /^[1-9][0-9]*$/) {
 			$optIndex--; # -1 for 0 origin array internally
 		}
 		else {
@@ -148,8 +163,8 @@ sub getUserSelectedKey {
 		}
 	} while ($optIndex < 0 || $optIndex > $indexMax);
 
-	print "$G_cursorUp1";
-	print "$G_boldText   ---> ". ($optIndex+1) .": $keyArray[$optIndex]"."$G_normalText\n";
+	print "$g_cursorUp1";
+	print "$g_boldText   ---> ". ($optIndex+1) .": $keyArray[$optIndex]"."$g_normalText\n";
 	return $keyArray[$optIndex];
 }
 
@@ -191,8 +206,20 @@ sub getMouseIDs {
 	#		print "'$ln': id='$id'\n";
 	#	}
 	#}
+	my $selectedKey;
+	if ($g_CMDARG_mouseStrIdent) {
+		# Command Line argument was given, so use it
+		$selectedKey = $g_CMDARG_mouseStrIdent;
+	}
+	else {
+		$selectedKey = getUserSelectedKey(sort(keys(%stringAndNumericMouseIDs)));
+	}
 	
-	my $selectedKey = getUserSelectedKey(sort(keys(%stringAndNumericMouseIDs)));
+	if (not exists $stringAndNumericMouseIDs{$selectedKey}) {
+		print "ERROR:\n";
+		print "    Mouse String Identifier selected: '$selectedKey' was not found.\n";
+		die;
+	}
 	my @mouseIDs = sort(keys(%{$stringAndNumericMouseIDs{$selectedKey}}));
 
 	# returns both numeric mouse IDs associated with the string identifier selected
