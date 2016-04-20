@@ -1,4 +1,5 @@
-# LinuxMouseSettings
+# Linux Mouse: Hot-Key toggle acceleration on and off
+
 Use hot keys to quickly switch mouse acceleration on or off. Works even in full screen games (mileage may vary).
 
 Also, uses acceleration presets, and makes dynamic calls to xinput and xset to configure mouse pointer accel and "precision"/decel with a little more configuration options than the default sliders provided in most distros.
