@@ -4,6 +4,7 @@ Use hot keys to quickly switch mouse acceleration on or off. Works even in full 
 
 Also, uses acceleration presets, and makes dynamic calls to xinput and xset to configure mouse pointer accel and "precision"/decel with a little more configuration options than the default sliders provided in most distros.
 
+# From the README inside the script itself:
 
  This code is open source, you're free to use/re-use it at will
 
