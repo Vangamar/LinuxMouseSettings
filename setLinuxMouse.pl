@@ -6,45 +6,89 @@ use warnings;
 # This code is open source, you're free to use/re-use it at will
 #
 #  SYNOPSIS:
-#    Dynamically read all connected mice from xinput and provide a
-#    text menu to select a mouse and pre-configured settings to apply.
+#     Use hot keys to quickly switch mouse acceleration on or off.
+#     Works even in full screen games (mileage may vary).
 #
-#    Gives more precise and consistent settings than the default
-#    acceleration slider used in most distros by using xinput and xset
-#    directly with a few extra parameters (configured below).
+#  USAGE:
+#     To configure, run this script with no arguments first.
+#     Find/copy the mouse string identifier for your mouse
+#     and try the presets in the script's menu.
 #
-#    Switches between acceleration and non-accelerated settings for
-#    gaming.
+#  OPTIONAL:
+#     Edit the mouse preset values below if you don't like
+#     my defaults, or want to add more presets.
+#
+#  HOT-KEYS:
+#     In Gnome 3 or Ubuntu's Unity Desktop Environments:
+#     (In other DE's, I am not familiar with how hot-keys are set,
+#     it may be similar.)
+#       - System Settings...  (gear icon, top-right of screen)
+#       - Keyboard         (icon)
+#       - Shortcuts        (tab)
+#       - Custom Shortcuts  (bottom of list)
+#       - Click "+" Button
+#
+#  EXAMPLE:
+#     Literal examples using my Logitech G500 mouse.
+#
+#     The first hot-key mapping disables all acceleration
+#       (defined below, in 'Preset 1').
+#     The second hot-key enables acceleration
+#       (defined below, in 'Preset 2').
+#
+#     Name    = G500_no_accel
+#     Command = /mnt/linux_vault/utils/setLinuxMouse.pl 'Logitech G500' 1
+#     Hot-Key = SUPER+F5
+#
+#     Name    = G500_accel
+#     Command = /mnt/linux_vault/utils/setLinuxMouse.pl 'Logitech G500' 2
+#     Hot-Key = SUPER+F6
+#
 #
 #  NON-DEFAULT LIB DEPENDENCIES:
-#    xinput
-#    Debian based distros: sudo apt-get install xinput
+#     xinput
+#     Debian based distros: sudo apt-get install xinput
 #
 #  FURTHER INFO:
-#    https://wiki.archlinux.org/index.php/Mouse_acceleration
+#     https://wiki.archlinux.org/index.php/Mouse_acceleration
 #
-
-# Edit these for what works for your mice
+#  PRESETS:
+#     Edit these for what works for your preferences:
+#########################################################################
 my @g_mouseParams = (
+
+ # Preset 1
  {
-    "title"  => "Best Sensitivity for about 700 to 800 DPI",
-    "decel"  => "2.0",              # higher decel numbers equals slower pointer
+    "title"  => "All Acceleration Off", # Do not edit this entry
+
+    "decel"  => "1.0",  # 
+    "accel"  => "0",    # Leave these numbers alone.
+    "thresh" => "0",    #
+ },
+
+ # Preset 2
+ {
+    "title"  => "Favorite accel/decel (precision) setting",
+
+    "decel"  => "1.75",  # higher values = slower pointer at slow hand movement speeds
+    "accel"  => "4.8",   # higher values = faster pointer at fast hand movement speeds
+    "thresh" => "2.0",   # higher values = slower overall mouse acceleration "curve"
+ },
+
+ # Preset 3
+ {
+    "title"  => "Testing or Alt accel/decel setting",
+
+    "decel"  => "1.7",
     "accel"  => "4.8",
     "thresh" => "2.0",
  },
- {
-    "title"  => "Testing Sensitivity",
-    "decel"  => "2.8",
-    "accel"  => "3.5",
-    "thresh" => "1.4",
- },
- {
-    "title"  => "Acceleration Off",
-    "decel"  => "1.0",
-    "accel"  => "0",
-    "thresh" => "0",
- },
+ #
+ # You can copy-paste the last entry to add more presets
+ #
 );
+#########################################################################
+
 
 #print "$g_mouseParams[0]{title}\n";
 
@@ -58,11 +102,18 @@ my $g_cursorDown1  = `tput cud1`;
 
 my ($g_CMDARG_mouseStrIdent, $g_CMDARG_paramsIndex) = @ARGV;
 
+sub condPrint {
+	if ($g_CMDARG_mouseStrIdent) {return;}
+	print "$_[0]";	
+}
+
 sub setMouseProps {
 	my ($optIndex, $mouseNumericID) = @_;
 
+	print "-=-\n";
 	if ($mouseNumericID !~ /^[0-9]{1,3}$/ || $mouseNumericID < 1 || $mouseNumericID > 127) {
-		print "ERROR: bad mouse numeric ID: '$mouseNumericID'...\n";
+		print "ERROR:\n";
+		print "    bad mouse numeric ID: '$mouseNumericID'...\n";
 		return;
 	}
 
@@ -74,14 +125,14 @@ sub setMouseProps {
 	my $xinputCmd = "xinput --set-prop $mouseNumericID 'Device Accel Constant Deceleration' $paramDecel";
 	my $xsetCmd = "xset mouse $paramAccel $paramThresh";
 
-	print "Running xinput+xset settings for mouse: ID='$mouseNumericID' " .
-	      "with parameters: $paramDecel, $paramAccel, $paramThresh\n";
+	print "Configuring mouse ID: '$mouseNumericID' " .
+	      "with values: $paramDecel, $paramAccel, $paramThresh\n";
 
 	my $mouseAccelOFF = "xinput --set-prop $mouseNumericID 'Device Accel Profile' -1";
 	my $mouseAccelON  = "xinput --set-prop $mouseNumericID 'Device Accel Profile' 0";
 	if ($paramAccel == 0 && $paramThresh == 0) {
 		# Detected turning mouse accel off
-		print "DISABLING ALL MOUSE ACCELERATION...\n";
+		print "$g_boldText DISABLING ALL MOUSE ACCELERATION... $g_normalText\n";
 		print "$mouseAccelOFF\n"; `$mouseAccelOFF`;
 	}
 	else {
@@ -108,16 +159,15 @@ sub getMouseParamsIndex {
 	
 	# get desired mouse params index from user
 	do {
-		print "Select Mouse Acceleration+Sensitivity profile:\n";
+		condPrint "Select Mouse Acceleration+Sensitivity profile:\n";
 		foreach my $m (@menuStrings) {
-			print "$m\n"; 
+			condPrint "$m\n"; 
 		}
-		print "  ---> ";
+		condPrint "  ---> ";
 
 		if ($g_CMDARG_paramsIndex) {
 			# Command line argument was given, so use it
 			$optIndex = $g_CMDARG_paramsIndex;
-			print "$optIndex\n";
 		}
 		else {
 			$optIndex = <STDIN>; chomp($optIndex);
@@ -132,8 +182,8 @@ sub getMouseParamsIndex {
 		}
 	} while ($optIndex < 0 || $optIndex > $indexMax);
 
-	print "$g_cursorUp1";
-	print "\r$g_boldText "."$menuStrings[$optIndex]"."$g_normalText\n";
+	condPrint "$g_cursorUp1";
+	condPrint "\r$g_boldText "."$menuStrings[$optIndex]"."$g_normalText\n";
 	return $optIndex;
 }
 
@@ -145,6 +195,7 @@ sub getUserSelectedKey {
 	my $optIndex = -1; #index error state
 
 	do {
+		print "-=-\n";		
 		print "Select Mouse String Identifier:\n";
 		for(my $i = 0; $i <= $indexMax; $i++) {
 			# print $i+1 for fake 1 origin array (for user appearances)
@@ -174,8 +225,9 @@ sub getMouseIDs {
 	my $BOOLingestIdentifier = 0;
 	
 	my @xinputList = `xinput list`;
+	condPrint "$g_boldText 'xinput list' shows these connected pointers: $g_normalText\n";
 	foreach my $ln (@xinputList) {
-		print "$ln";
+		condPrint "$ln";
 		if ($ln =~ /Virtual core pointer/i) {
 			$BOOLingestIdentifier = 1;
 		}
@@ -215,6 +267,7 @@ sub getMouseIDs {
 		$selectedKey = getUserSelectedKey(sort(keys(%stringAndNumericMouseIDs)));
 	}
 	
+	print "-=-\n";
 	if (not exists $stringAndNumericMouseIDs{$selectedKey}) {
 		print "ERROR:\n";
 		print "    Mouse String Identifier selected: '$selectedKey' was not found.\n";
@@ -222,14 +275,17 @@ sub getMouseIDs {
 	}
 	my @mouseIDs = sort(keys(%{$stringAndNumericMouseIDs{$selectedKey}}));
 
+	print "Found mouse: '$selectedKey', maps to numeric ID(s): '@mouseIDs'\n";
+
 	# returns both numeric mouse IDs associated with the string identifier selected
 	return @mouseIDs;
 }
 
 sub main {
 	my @mouseIDs = getMouseIDs();
-	my $optIndex = getMouseParamsIndex();
+	my $optIndex;
 
+	$optIndex = getMouseParamsIndex();
 	foreach my $id (@mouseIDs) {
 		setMouseProps($optIndex, $id);
 	}
