@@ -12,21 +12,21 @@ use warnings;
 #
 #  SCRIPT COMMAND-LINE EXAMPLES:
 #
-#     setLinuxMouse.pl 'all' 1   (no acceleration)
-#     setLinuxMouse.pl 'all' 2   (acceleration)
+#     $ setLinuxMouse.pl 'all' 1   (no acceleration)
+#     $ setLinuxMouse.pl 'all' 2   (acceleration)
 #
 #        Easy method: apply Preset 1 (no acceleration) or
 #        Preset 2 (acceleration) to all mice attached to your PC.
 #        This is probably all you'll ever need - but it might also
 #        have unexpected results, depending on what you have attached.
 #
-#     setLinuxMouse.pl
+#     $ setLinuxMouse.pl
 #
 #        With no arguments, script enters menu mode.
 #        List/Find your mouse string identifiers, to use
 #        the last method:
 #
-#     setLinuxMouse.pl 'Logitech G500' 2
+#     $ setLinuxMouse.pl 'Logitech G500' 2
 #
 #        Selective method, apply Preset 2 only to the specific
 #        mouse string identifier.
@@ -72,7 +72,7 @@ use warnings;
 #
 #  NON-DEFAULT LIB DEPENDENCIES:
 #     xinput
-#     Debian based distros: sudo apt-get install xinput
+#     Debian based distros: $ sudo apt-get install xinput
 #
 #  FURTHER INFO:
 #     https://wiki.archlinux.org/index.php/Mouse_acceleration
