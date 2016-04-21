@@ -6,19 +6,33 @@ use warnings;
 # This code is open source, you're free to use/re-use it at will
 #
 #  SYNOPSIS:
+#
 #     Use hot keys to quickly switch mouse acceleration on or off.
 #     Works even in full screen games (mileage may vary).
 #
-#  USAGE:
-#     To configure, run this script with no arguments first.
-#     Find/copy the mouse string identifier for your mouse
-#     and try the presets in the script's menu.
+#  SCRIPT COMMAND-LINE EXAMPLES:
 #
-#  OPTIONAL:
-#     Edit the mouse preset values below if you don't like
-#     my defaults, or want to add more presets.
+#     setLinuxMouse.pl 'all' 1   (no acceleration)
+#     setLinuxMouse.pl 'all' 2   (acceleration)
 #
-#  HOT-KEYS:
+#        Easy method: apply Preset 1 (no acceleration) or
+#        Preset 2 (acceleration) to all mice attached to your PC.
+#        This is probably all you'll ever need - but it might also
+#        have unexpected results, depending on what you have attached.
+#
+#     setLinuxMouse.pl
+#
+#        With no arguments, script enters menu mode.
+#        List/Find your mouse string identifiers, to use
+#        the last method:
+#
+#     setLinuxMouse.pl 'Logitech G500' 2
+#
+#        Selective method, apply Preset 2 only to the specific
+#        mouse string identifier.
+#
+#  ADD HOT-KEYS:
+#
 #     In Gnome 3 or Ubuntu's Unity Desktop Environments:
 #     (In other DE's, I am not familiar with how hot-keys are set,
 #     it may be similar.)
@@ -28,22 +42,30 @@ use warnings;
 #       - Custom Shortcuts  (bottom of list)
 #       - Click "+" Button
 #
-#  EXAMPLE:
-#     Literal examples using my Logitech G500 mouse.
+#  HOT-KEY EXAMPLES:
 #
-#     The first hot-key mapping disables all acceleration
-#       (defined below, in 'Preset 1').
-#     The second hot-key enables acceleration
-#       (defined below, in 'Preset 2').
+#     (Assuming you've stuck the script in your home directory)
 #
-#     Name    = G500_no_accel
-#     Command = /mnt/linux_vault/utils/setLinuxMouse.pl 'Logitech G500' 1
-#     Hot-Key = SUPER+F5
+#     Preset 1 disables all acceleration
+#     Preset 2 enables acceleration (defined below).
 #
-#     Name    = G500_accel
-#     Command = /mnt/linux_vault/utils/setLinuxMouse.pl 'Logitech G500' 2
-#     Hot-Key = SUPER+F6
+#     All attached mice:
+#        Name    = allMice_no_accel
+#        Command = $HOME/setLinuxMouse.pl 'all' 1
+#        Hot-Key = SUPER+F5
 #
+#        Name    = allMice_accel
+#        Command = $HOME/setLinuxMouse.pl 'all' 2
+#        Hot-Key = SUPER+F6
+#
+#     A specific mouse:
+#        Name    = G500_no_accel
+#        Command = $HOME/setLinuxMouse.pl 'Logitech G500' 1
+#        Hot-Key = SUPER+F5
+#
+#        Name    = G500_accel
+#        Command = $HOME/setLinuxMouse.pl 'Logitech G500' 2
+#        Hot-Key = SUPER+F6
 #
 #  NON-DEFAULT LIB DEPENDENCIES:
 #     xinput
@@ -51,8 +73,26 @@ use warnings;
 #
 #  FURTHER INFO:
 #     https://wiki.archlinux.org/index.php/Mouse_acceleration
+#     This Perl script, to a large extent, started as a front-end wrapper
+#     to xinput, after reading the above Arch Linux wiki page.
+#     xinput gives the ability to switch on and off mouse acceleration
+#     dynamically, but it's command-line interface can be... problematic.
+#     Especially with Logitech mice, which for some reason show up twice
+#     with two numeric IDs.  Running xinput with the string identifier
+#     throws error messages for mice that list twice.
+#     Using the numeric ID with xinput is problematic because the numeric
+#     ID can change as things are attached/unattached...
+#     It's inconsistent which numeric ID when two are listed for the same
+#     mouse to run xinput against.
+#     :sigh:  time to write a wrapper, screen scrape 'xinput list' and
+#     dynamically extract numeric ID(s) for a given string identifier
+#     and "brute force run xinput against all those numeric ID(s) to make
+#     sure it takes.
+#     After that much front-end bandaide stupidity, why not go full
+#     retard, add the 'all' method to brute force all the numeric IDs
+#     and put the script on hot-keys, right?  Now it's actually a little useful.
 #
-#  PRESETS:
+#  PRESET DEFINITIONS:
 #     Edit these for what works for your preferences:
 #########################################################################
 my @g_mouseParams = (
@@ -100,9 +140,12 @@ my $g_cursorUp1    = `tput cuu1`;
 my $g_cursorDown1  = `tput cud1`;
 
 
+# Optional command-line arguments
 my ($g_CMDARG_mouseStrIdent, $g_CMDARG_paramsIndex) = @ARGV;
 
 sub condPrint {
+	# Conditional print statements only print if no command-line arguments are passed in.
+	# (interactive menu mode)
 	if ($g_CMDARG_mouseStrIdent) {return;}
 	print "$_[0]";	
 }
@@ -222,6 +265,7 @@ sub getUserSelectedKey {
 sub getMouseIDs {
 	my %stringAndNumericMouseIDs;
 	my $id;
+	my @allPointerIDs;
 	my $BOOLingestIdentifier = 0;
 	
 	my @xinputList = `xinput list`;
@@ -237,7 +281,12 @@ sub getMouseIDs {
 		elsif ($BOOLingestIdentifier) {
 			#print "$ln";
 			$ln =~ /id=([0-9]+)/i;
+
 			$id = $1;                # capture the mouse numeric ID
+
+			push(@allPointerIDs, ($id)); # keep a list of all numeric pointer IDs for a possible
+										 # brute force "all" batch run
+
 			$ln =~ s/^[^a-z0-9]+//i;
 			$ln =~ s/\s+id=[0-9]+.+$//i;
 			chomp($ln);              # capture the mouse string identifier
@@ -264,20 +313,36 @@ sub getMouseIDs {
 		$selectedKey = $g_CMDARG_mouseStrIdent;
 	}
 	else {
+		# Let user interactively select from a menu of all found mouse pointer
+		# string identifiers
 		$selectedKey = getUserSelectedKey(sort(keys(%stringAndNumericMouseIDs)));
 	}
 	
 	print "-=-\n";
-	if (not exists $stringAndNumericMouseIDs{$selectedKey}) {
-		print "ERROR:\n";
-		print "    Mouse String Identifier selected: '$selectedKey' was not found.\n";
-		die;
+
+
+	my @mouseIDs;	
+	if ($selectedKey =~ /^all$/i) {
+		@mouseIDs = @allPointerIDs;
+		print "Running brute force on 'all' mouse pointer IDs: '@mouseIDs'\n";
 	}
-	my @mouseIDs = sort(keys(%{$stringAndNumericMouseIDs{$selectedKey}}));
+	else {
+		if (not exists $stringAndNumericMouseIDs{$selectedKey}) {
+			print "ERROR:\n";
+			print "    Mouse String Identifier selected: '$selectedKey' was not found.\n";
+			die;
+		}
+		@mouseIDs = sort(keys(%{$stringAndNumericMouseIDs{$selectedKey}}));
+		print "Found mouse: '$selectedKey', maps to numeric ID(s): '@mouseIDs'\n";
+	}
 
-	print "Found mouse: '$selectedKey', maps to numeric ID(s): '@mouseIDs'\n";
 
-	# returns both numeric mouse IDs associated with the string identifier selected
+	# Returns one or both numeric mouse IDs associated with the mouse string
+	# identifier, that was selected either via command line argument or
+	# interactive menu selection. (some mice have two numeric IDs per mouse, ex Logitech mice)
+	# -or-
+	# Returns all numeric pointer IDs if special 'all' string identifier was passed
+	# in on command line
 	return @mouseIDs;
 }
 
