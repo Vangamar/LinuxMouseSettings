@@ -270,22 +270,25 @@ sub getMouseIDs {
 	my $id;
 	my @allPointerIDs;
 	
+	#######################################################################################
+	# Ugly barbaric "screen-scrape" of 'xinput list' report begins.
+	# Makes assumptions on how this report is formatted that will break if future
+	# versions of xinput change the report format in an incompatible way.
 	condPrint "$g_boldText 'xinput list' shows these connected devices: $g_normalText\n";
 	my @xinputList = `xinput --list --short`;
 	foreach my $ln (@xinputList) {
 		condPrint "$ln";
 		if ($ln =~ /slave\s+pointer/i) {
 			# This is a valid mouse pointer line
-			#print "$ln";
-			$ln =~ /id=([0-9]+)/i;
 
+			$ln =~ /id=([0-9]+)/i;
 			$id = $1;                # capture the mouse numeric ID
 
 			push(@allPointerIDs, ($id)); # keep a list of all numeric pointer IDs for a possible
 										 # brute force "all" batch run
 
-			$ln =~ s/^[^a-z0-9]+//i;
-			$ln =~ s/\s+id=[0-9]+.+$//i;
+			$ln =~ s/^[^a-z0-9]+//i;      # strip everything before string identifier begins
+			$ln =~ s/\s+id=[0-9]+.+$//i;  # strip everything after string identifier ends
 			chomp($ln);              # capture the mouse string identifier
 			#print "captured: '$ln'\n";
 
@@ -297,6 +300,8 @@ sub getMouseIDs {
 			$stringAndNumericMouseIDs{$ln}{$id} = 1; # the value 1 is never used, just building keys
 		}
 	}
+	# Ugly barbaric "screen-scrape" of 'xinput list' report ends
+	#######################################################################################
 
 	# DEBUG:
 	#foreach my $ln (keys(%stringAndNumericMouseIDs)) {
