@@ -44,27 +44,30 @@ use warnings;
 #
 #  HOT-KEY EXAMPLES:
 #
-#     (Assuming you've stuck the script in your home directory)
+#     Assuming you've stuck the script in the home directory of 'username'
+#     WARNING:  Using the $HOME variable in the path to the script does not seem
+#        to work for me in the hot-key commands, I recommend using literal
+#        absolute paths.
 #
 #     Preset 1 disables all acceleration
 #     Preset 2 enables acceleration (defined below).
 #
 #     All attached mice:
 #        Name    = allMice_no_accel
-#        Command = $HOME/setLinuxMouse.pl 'all' 1
+#        Command = /home/username/setLinuxMouse.pl 'all' 1
 #        Hot-Key = SUPER+F5
 #
 #        Name    = allMice_accel
-#        Command = $HOME/setLinuxMouse.pl 'all' 2
+#        Command = /home/username/setLinuxMouse.pl 'all' 2
 #        Hot-Key = SUPER+F6
 #
 #     A specific mouse:
 #        Name    = G500_no_accel
-#        Command = $HOME/setLinuxMouse.pl 'Logitech G500' 1
+#        Command = /home/username/setLinuxMouse.pl 'Logitech G500' 1
 #        Hot-Key = SUPER+F5
 #
 #        Name    = G500_accel
-#        Command = $HOME/setLinuxMouse.pl 'Logitech G500' 2
+#        Command = /home/username/setLinuxMouse.pl 'Logitech G500' 2
 #        Hot-Key = SUPER+F6
 #
 #  NON-DEFAULT LIB DEPENDENCIES:
@@ -86,7 +89,7 @@ use warnings;
 #     mouse to run xinput against.
 #     :sigh:  time to write a wrapper, screen scrape 'xinput list' and
 #     dynamically extract numeric ID(s) for a given string identifier
-#     and "brute force run xinput against all those numeric ID(s) to make
+#     and "brute force" run xinput against all those numeric ID(s) to make
 #     sure it takes.
 #     After that much front-end bandaide stupidity, why not go full
 #     retard, add the 'all' method to brute force all the numeric IDs
