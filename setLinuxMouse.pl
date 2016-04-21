@@ -148,9 +148,9 @@ my ($g_CMDARG_mouseStrIdent, $g_CMDARG_paramsIndex) = @ARGV;
 
 sub condPrint {
 	# Conditional print statements only print if no command-line arguments are passed in.
-	# (interactive menu mode)
+	# (script is in interactive menu mode)
 	if ($g_CMDARG_mouseStrIdent) {return;}
-	print "$_[0]";	
+	print "@_";	
 }
 
 sub setMouseProps {
@@ -195,41 +195,42 @@ sub getMouseParamsIndex {
 	my $indexMax = $#g_mouseParams;
 	my $optIndex = -1; #index error state
 	my @menuStrings;
+	
+	if ($g_CMDARG_paramsIndex) {
+		# Command line argument was given, so use it
+		$optIndex = $g_CMDARG_paramsIndex;
+		$optIndex--; # offset for 0 origin array internally
+		if (not $g_CMDARG_paramsIndex =~ /^[1-9][0-9]*$/ or $optIndex < 0 or $optIndex > $indexMax) {
+			print "ERROR: invalid Preset number selected: '$g_CMDARG_paramsIndex'\n";
+			die;
+		}
+		return $optIndex;
+	}
 
 	# build menu options string array
 	for(my $i = 0; $i <= $indexMax; $i++) {
 		# print $i+1 for fake 1 origin array (for user appearances in menu selection)
 		$menuStrings[$i] = "  ---> " . ($i+1) . ": $g_mouseParams[$i]{title} " .
-		      "($g_mouseParams[$i]{decel}, $g_mouseParams[$i]{accel}, $g_mouseParams[$i]{thresh})"; 
+			  "($g_mouseParams[$i]{decel}, $g_mouseParams[$i]{accel}, $g_mouseParams[$i]{thresh})"; 
 	}
-	
 	# get desired mouse params index from user
 	do {
-		condPrint "Select Mouse Acceleration+Sensitivity profile:\n";
+		print "Select Mouse Acceleration+Sensitivity profile:\n";
 		foreach my $m (@menuStrings) {
-			condPrint "$m\n"; 
+			print "$m\n"; 
 		}
-		condPrint "  ---> ";
-
-		if ($g_CMDARG_paramsIndex) {
-			# Command line argument was given, so use it
-			$optIndex = $g_CMDARG_paramsIndex;
-		}
-		else {
-			$optIndex = <STDIN>; chomp($optIndex);
-		}
-
+		print "  ---> ";
+		$optIndex = <STDIN>; chomp($optIndex);
 
 		if ($optIndex =~ /^[1-9][0-9]*$/) {
-			$optIndex--; # -1 for 0 origin array internally
+			$optIndex--; # offset for 0 origin array internally
 		}
 		else {
 			$optIndex = "-1"; #index error state
 		}
 	} while ($optIndex < 0 || $optIndex > $indexMax);
-
-	condPrint "$g_cursorUp1";
-	condPrint "\r$g_boldText "."$menuStrings[$optIndex]"."$g_normalText\n";
+	print "$g_cursorUp1";
+	print "\r$g_boldText "."$menuStrings[$optIndex]"."$g_normalText\n";
 	return $optIndex;
 }
 
@@ -349,10 +350,9 @@ sub getMouseIDs {
 }
 
 sub main {
-	my @mouseIDs = getMouseIDs();
-	my $optIndex;
+	my @mouseIDs = getMouseIDs(); # Numeric mouse IDs 'xinput' calls will use
+	my $optIndex = getMouseParamsIndex(); # array index of selected Preset to apply to mouse
 
-	$optIndex = getMouseParamsIndex();
 	foreach my $id (@mouseIDs) {
 		setMouseProps($optIndex, $id);
 	}
