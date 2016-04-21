@@ -269,19 +269,13 @@ sub getMouseIDs {
 	my %stringAndNumericMouseIDs;
 	my $id;
 	my @allPointerIDs;
-	my $BOOLingestIdentifier = 0;
 	
-	my @xinputList = `xinput list`;
-	condPrint "$g_boldText 'xinput list' shows these connected pointers: $g_normalText\n";
+	condPrint "$g_boldText 'xinput list' shows these connected devices: $g_normalText\n";
+	my @xinputList = `xinput --list --short`;
 	foreach my $ln (@xinputList) {
 		condPrint "$ln";
-		if ($ln =~ /Virtual core pointer/i) {
-			$BOOLingestIdentifier = 1;
-		}
-		elsif ($ln =~ /Virtual core keyboard/i) {
-			last;
-		}
-		elsif ($BOOLingestIdentifier) {
+		if ($ln =~ /slave\s+pointer/i) {
+			# This is a valid mouse pointer line
 			#print "$ln";
 			$ln =~ /id=([0-9]+)/i;
 
@@ -295,8 +289,8 @@ sub getMouseIDs {
 			chomp($ln);              # capture the mouse string identifier
 			#print "captured: '$ln'\n";
 
-			# xinput lists each mouse string identifier twice with two different
-			# numeric IDs.
+			# xinput lists a Logitech mouse string identifier twice, with two different
+			# numeric IDs - possibly true of other mice.
 			# This is why we use a 2-dimensional hash:
 			#   - store each UNIQUE mouse string identifier as a key once {$ln}
 			#   - store both numerical IDs {$id} as keys in each unique string identifier key
