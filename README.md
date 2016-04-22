@@ -43,7 +43,7 @@ Also, uses acceleration presets, and makes dynamic calls to xinput and xset to c
        - Shortcuts        (tab)
        - Custom Shortcuts  (bottom of list)
        - Click "+" Button
-       In openSUSE KDE:
+     In openSUSE KDE:
        - "K" Menu    (bottom-left of screen)
        - Settings -> Configure Desktop   (menu)
        - Workspace -> Shortcuts    (icon)
