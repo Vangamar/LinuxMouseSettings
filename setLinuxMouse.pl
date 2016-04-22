@@ -34,13 +34,17 @@ use warnings;
 #  ADD HOT-KEYS:
 #
 #     In Gnome 3 or Ubuntu's Unity Desktop Environments:
-#     (In other DE's, I am not familiar with how hot-keys are set,
-#     it may be similar.)
 #       - System Settings...  (gear icon, top-right of screen)
 #       - Keyboard         (icon)
 #       - Shortcuts        (tab)
 #       - Custom Shortcuts  (bottom of list)
 #       - Click "+" Button
+#     In openSUSE KDE:
+#       - "K" Menu    (bottom-left of screen)
+#       - Settings -> Configure Desktop   (menu)
+#       - Workspace -> Shortcuts    (icon)
+#       - Custom Shortcuts   (bottom of list)
+#       - Edit -> New -> Global Shortcut -> Command/URL  (drop-down menu of "Edit" button)
 #
 #  HOT-KEY EXAMPLES:
 #
@@ -73,6 +77,7 @@ use warnings;
 #  NON-DEFAULT LIB DEPENDENCIES:
 #     xinput
 #     Debian based distros: $ sudo apt-get install xinput
+#     openSUSE: $ sudo zypper install xinput
 #
 #  FURTHER INFO:
 #     https://wiki.archlinux.org/index.php/Mouse_acceleration
