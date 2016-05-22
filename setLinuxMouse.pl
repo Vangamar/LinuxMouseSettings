@@ -127,9 +127,9 @@ my @g_mouseParams = (
  {
     "title"  => "Testing or Alt accel/decel setting",
 
-    "decel"  => "1.7",
-    "accel"  => "4.8",
-    "thresh" => "2.0",
+    "decel"  => "4.7",
+    "accel"  => "6.8",
+    "thresh" => "1.0",
  },
  #
  # You can copy-paste the last entry to add more presets
